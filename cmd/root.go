@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"path"
 
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
@@ -10,6 +11,7 @@ import (
 )
 
 var cfgFile string
+var projectID string
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -23,7 +25,7 @@ This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("auto detecting publish/subscribe")
+		fmt.Println("auto detecting publish/subscribe (not supported yet)")
 	},
 }
 
@@ -40,8 +42,7 @@ func init() {
 	cobra.OnInitialize(initConfig)
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is ~/.pubsubcat)")
-
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	rootCmd.PersistentFlags().StringVar(&projectID, "project", "", "Google Cloud Project to work under")
 }
 
 func initConfig() {
@@ -55,6 +56,7 @@ func initConfig() {
 		}
 
 		viper.AddConfigPath(home)
+		viper.AddConfigPath(path.Join(home, ".config"))
 		viper.SetConfigName(".pubsubcat")
 	}
 
