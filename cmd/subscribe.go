@@ -21,23 +21,29 @@ var subscribeCmd = &cobra.Command{
 		defer cancel()
 		utils.CancelOnSignal(ctx, cancel, os.Interrupt)
 
-		// TODO: Determine projectID/topicID by args[] and/or from default project.
-		//       Support /project/MY_PROJECT_ID/topics/MY_TOPIC override
-
-		client, err := pubsub.NewClient(ctx, projectID)
+		inProjectID, topicID, err := utils.DetermineProject(args[0], globalProjectID)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "failed to create pubsub client: %v", err)
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
+
+		client, err := pubsub.NewClient(ctx, inProjectID)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "failed to create pubsub client: %v\n", err)
+			os.Exit(1)
 		}
 		defer client.Close()
 
-		err = tasks.CleanTopic(ctx, client, args[0])
+		err = tasks.CleanTopic(ctx, client, topicID)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "failed to clean old subscriptions: %v", err)
+			fmt.Fprintf(os.Stderr, "failed to clean old subscriptions: %v\n", err)
+			os.Exit(1)
 		}
 
-		err = tasks.Subscribe(ctx, client, args[0])
+		err = tasks.Subscribe(ctx, client, topicID)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "failed to subscribe: %v", err)
+			fmt.Fprintf(os.Stderr, "failed to subscribe: %v\n", err)
+			os.Exit(1)
 		}
 	},
 }

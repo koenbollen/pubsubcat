@@ -15,27 +15,30 @@ import (
 var publishCmd = &cobra.Command{
 	Use:   "publish",
 	Short: "Publish input lines as messages",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 		utils.CancelOnSignal(ctx, cancel, os.Interrupt)
 
-		// TODO: Determine projectID/topicID by args[] and/or from default project.
-		//       Support /project/MY_PROJECT_ID/topics/MY_TOPIC override
-
-		client, err := pubsub.NewClient(ctx, projectID)
+		inProjectID, topicID, err := utils.DetermineProject(args[0], globalProjectID)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "failed to create pubsub client: %v", err)
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
+
+		client, err := pubsub.NewClient(ctx, inProjectID)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "failed to create pubsub client: %v\n", err)
+			os.Exit(1)
 		}
 		defer client.Close()
 
-		tasks.Publish(ctx, client, args[0])
+		err = tasks.Publish(ctx, client, topicID)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "failed to publish messages: %v\n", err)
+			os.Exit(1)
+		}
 	},
 }
 

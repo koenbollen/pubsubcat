@@ -1,26 +1,28 @@
-package utils
+package utils_test
 
 import (
 	"context"
 	"os"
+	"syscall"
 	"testing"
+	"time"
+
+	"github.com/koenbollen/pubsubcat/utils"
 )
 
 func TestCancelOnSignal(t *testing.T) {
-	type args struct {
-		ctx     context.Context
-		cancel  context.CancelFunc
-		signals []os.Signal
+	ctx := context.Background()
+	called := false
+	cancelFunc := func() {
+		called = true
 	}
-	tests := []struct {
-		name string
-		args args
-	}{
-	// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			CancelOnSignal(tt.args.ctx, tt.args.cancel, tt.args.signals...)
-		})
+
+	utils.CancelOnSignal(ctx, cancelFunc, syscall.SIGUSR1)
+
+	syscall.Kill(os.Getpid(), syscall.SIGUSR1)
+
+	time.Sleep(1 * time.Millisecond)
+	if !called {
+		t.Error("cancelFunc not called on signal")
 	}
 }

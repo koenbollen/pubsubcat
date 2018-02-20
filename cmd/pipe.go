@@ -26,24 +26,39 @@ to quickly create a Cobra application.`,
 		defer cancel()
 		utils.CancelOnSignal(ctx, cancel, os.Interrupt)
 
-		// TODO: Determine projectID/topicID by args[] and/or from default project.
-		//       Support /project/MY_PROJECT_ID/topics/MY_TOPIC override
-		// TODO: Fail if two projects.
-
-		client, err := pubsub.NewClient(ctx, projectID)
+		inProjectID, inTopicID, err := utils.DetermineProject(args[0], globalProjectID)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "failed to create pubsub client: %v", err)
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
+		outProjectID, outTopicID, err := utils.DetermineProject(args[1], inProjectID)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
+
+		if inProjectID != outProjectID {
+			fmt.Fprintln(os.Stderr, "unable to pipe between different Google Cloud Projects")
+			os.Exit(1)
+		}
+
+		client, err := pubsub.NewClient(ctx, inProjectID)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "failed to create pubsub client: %v\n", err)
+			os.Exit(1)
 		}
 		defer client.Close()
 
-		err = tasks.CleanTopic(ctx, client, args[0])
+		err = tasks.CleanTopic(ctx, client, inTopicID)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "failed to clean old subscriptions: %v", err)
+			fmt.Fprintf(os.Stderr, "failed to clean old subscriptions: %v\n", err)
+			os.Exit(1)
 		}
 
-		err = tasks.Pipe(ctx, client, args[0], args[1])
+		err = tasks.Pipe(ctx, client, inTopicID, outTopicID)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "failed to subscribe: %v", err)
+			fmt.Fprintf(os.Stderr, "failed to subscribe: %v\n", err)
+			os.Exit(1)
 		}
 	},
 }

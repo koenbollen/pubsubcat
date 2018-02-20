@@ -11,18 +11,13 @@ import (
 )
 
 var cfgFile string
-var projectID string
+var globalProjectID string
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "pubsubcat",
-	Short: "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "Google Pub/Sub Swiss Army Knife",
+	Long:  ``,
 
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("auto detecting publish/subscribe (not supported yet)")
@@ -33,7 +28,7 @@ to quickly create a Cobra application.`,
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
+		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 }
@@ -42,7 +37,7 @@ func init() {
 	cobra.OnInitialize(initConfig)
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is ~/.pubsubcat)")
-	rootCmd.PersistentFlags().StringVar(&projectID, "project", "", "Google Cloud Project to work under")
+	rootCmd.PersistentFlags().StringVar(&globalProjectID, "project", "", "Google Cloud Project to work under")
 }
 
 func initConfig() {
