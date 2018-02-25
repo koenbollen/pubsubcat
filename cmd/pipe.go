@@ -22,6 +22,8 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
+		verbosity := GetVerbosity(cmd.Flags())
+
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 		utils.CancelOnSignal(ctx, cancel, os.Interrupt)
@@ -44,18 +46,27 @@ to quickly create a Cobra application.`,
 
 		client, err := pubsub.NewClient(ctx, inProjectID)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "failed to create pubsub client: %v\n", err)
+			fmt.Fprintf(os.Stderr, "failed to connect to pubsub: %v\n", err)
 			os.Exit(1)
 		}
 		defer client.Close()
 
-		err = tasks.CleanTopic(ctx, client, inTopicID)
+		cleanParams := tasks.CleanParams{
+			Verbosity: verbosity,
+			TopicID:   inTopicID,
+		}
+		err = tasks.CleanTopic(ctx, client, cleanParams)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "failed to clean old subscriptions: %v\n", err)
 			os.Exit(1)
 		}
 
-		err = tasks.Pipe(ctx, client, inTopicID, outTopicID)
+		pipeParams := tasks.PipeParams{
+			Verbosity:  verbosity,
+			InTopicID:  inTopicID,
+			OutTopicID: outTopicID,
+		}
+		err = tasks.Pipe(ctx, client, pipeParams)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "failed to subscribe: %v\n", err)
 			os.Exit(1)

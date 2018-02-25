@@ -2,11 +2,13 @@ package cmd
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"path"
 
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 )
 
@@ -27,6 +29,7 @@ var rootCmd = &cobra.Command{
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
+	log.SetFlags(0)
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
@@ -37,7 +40,10 @@ func init() {
 	cobra.OnInitialize(initConfig)
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is ~/.pubsubcat)")
-	rootCmd.PersistentFlags().StringVar(&globalProjectID, "project", "", "Google Cloud Project to work under")
+	rootCmd.PersistentFlags().StringVarP(&globalProjectID, "project", "p", "", "Google Cloud Project to work under")
+
+	rootCmd.PersistentFlags().BoolP("quiet", "q", false, "Only output messages")
+	rootCmd.PersistentFlags().CountP("verbose", "v", "increase verbosity")
 }
 
 func initConfig() {
@@ -60,4 +66,14 @@ func initConfig() {
 	if err := viper.ReadInConfig(); err == nil {
 		fmt.Println("Using config file:", viper.ConfigFileUsed())
 	}
+}
+
+// GetVerbosity determines the level of verboseness based on the given
+// flags. Quiet is 0 and default is 1, all -v flags add one.
+func GetVerbosity(flags *pflag.FlagSet) int {
+	if quiet, err := flags.GetBool("quiet"); err == nil && quiet {
+		return 0
+	}
+	verbosity, _ := flags.GetCount("verbose")
+	return verbosity + 1
 }

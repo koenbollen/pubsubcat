@@ -23,6 +23,7 @@ func DetectDefaultProject() string {
 			}
 		}
 	}
+	// TODO: Support PUBSUB_PROJECT_ID env
 	return ""
 }
 

@@ -17,6 +17,8 @@ var publishCmd = &cobra.Command{
 	Short: "Publish input lines as messages",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
+		verbosity := GetVerbosity(cmd.Flags())
+
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 		utils.CancelOnSignal(ctx, cancel, os.Interrupt)
@@ -29,12 +31,16 @@ var publishCmd = &cobra.Command{
 
 		client, err := pubsub.NewClient(ctx, inProjectID)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "failed to create pubsub client: %v\n", err)
+			fmt.Fprintf(os.Stderr, "failed to connect to pubsub: %v\n", err)
 			os.Exit(1)
 		}
 		defer client.Close()
 
-		err = tasks.Publish(ctx, client, topicID)
+		publishParams := tasks.PublishParams{
+			Verbosity: verbosity,
+			TopicID:   topicID,
+		}
+		err = tasks.Publish(ctx, client, publishParams)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "failed to publish messages: %v\n", err)
 			os.Exit(1)
