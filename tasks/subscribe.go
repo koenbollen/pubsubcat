@@ -22,6 +22,7 @@ var newline = []byte("\n")
 type SubscribeParams struct {
 	Verbosity int
 	TopicID   string
+	Count     int
 }
 
 // Subscribe will connect to pubsub, created a temporary subscription on the
@@ -47,9 +48,19 @@ func Subscribe(ctx context.Context, client *pubsub.Client, params SubscribeParam
 
 	// Receive messages on subscription and output them to Stdout:
 	var mu sync.Mutex
-	err = subscription.Receive(ctx, func(ctx context.Context, msg *pubsub.Message) {
-		mu.Lock()
+	received := 0
+	cctx, cancel := context.WithCancel(ctx)
+	err = subscription.Receive(cctx, func(ctx context.Context, msg *pubsub.Message) {
+		mu.Lock() // TODO: Maybe only lock when --counting or --blocking?
 		defer mu.Unlock()
+
+		received++
+		if params.Count > 0 && received > params.Count {
+			cancel()
+			msg.Nack()
+			return
+		}
+
 		if params.Verbosity >= 3 {
 			log.Printf("] received %q at %v", msg.ID, msg.PublishTime)
 		}

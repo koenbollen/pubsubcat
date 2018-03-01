@@ -42,7 +42,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is ~/.pubsubcat)")
 	rootCmd.PersistentFlags().StringVarP(&globalProjectID, "project", "p", "", "Google Cloud Project to work under")
 
-	rootCmd.PersistentFlags().BoolP("quiet", "q", false, "Only output messages")
+	rootCmd.PersistentFlags().BoolP("quiet", "q", false, "only output messages")
 	rootCmd.PersistentFlags().CountP("verbose", "v", "increase verbosity")
 }
 

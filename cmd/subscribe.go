@@ -46,9 +46,11 @@ var subscribeCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
+		count, _ := cmd.Flags().GetInt("count")
 		subscribeParams := tasks.SubscribeParams{
 			TopicID:   topicID,
 			Verbosity: verbosity,
+			Count:     count,
 		}
 		err = tasks.Subscribe(ctx, client, subscribeParams)
 		if err != nil {
@@ -61,13 +63,11 @@ var subscribeCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(subscribeCmd)
 
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// subscribeCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	subscribeCmd.Flags().IntP("count", "c", 0, "only read <int> messages, then exit")
 
 	// TODO: Support --output=FILE, -o FILE
-	// TODO: Support --count=N, -c N
 	// TODO: Support --unbuffered, -u
 	// TODO: Support --no-cleanup
-	// TODO: Support --subscription mycustomsubscription
+	// TODO: Support --subscription mycustomsubscription (or as a second positional argument)
+	// TODO: Support https://godoc.org/cloud.google.com/go/pubsub#Subscription.SeekToTime
 }

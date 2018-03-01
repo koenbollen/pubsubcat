@@ -61,10 +61,12 @@ to quickly create a Cobra application.`,
 			os.Exit(1)
 		}
 
+		count, _ := cmd.Flags().GetInt("count")
 		pipeParams := tasks.PipeParams{
 			Verbosity:  verbosity,
 			InTopicID:  inTopicID,
 			OutTopicID: outTopicID,
+			Count:      count,
 		}
 		err = tasks.Pipe(ctx, client, pipeParams)
 		if err != nil {
@@ -77,7 +79,8 @@ to quickly create a Cobra application.`,
 func init() {
 	rootCmd.AddCommand(pipeCmd)
 
-	// TODO: Support --count=N, -c N
+	pipeCmd.Flags().IntP("count", "c", 0, "only read <int> messages, then exit")
+
 	// TODO: Support --no-cleanup
 	// TODO: Support --blocking, -b
 }

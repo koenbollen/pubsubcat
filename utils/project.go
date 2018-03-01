@@ -10,10 +10,18 @@ import (
 )
 
 var defaultGCloudConfig = "$HOME/.config/gcloud/configurations/config_default"
+var projectIDEnvironmentKeys = []string{"PUBSUBCAT_PROJECT_ID", "PUBSUB_PROJECT_ID", "GOOGLE_CLOUD_PROJECT"}
 
 // DetectDefaultProject searches for gcloud configuration to see what a
 // default GCE project could be.
+//
+// TODO: Describe this behaviour in the --help
 func DetectDefaultProject() string {
+	for _, env := range projectIDEnvironmentKeys {
+		if projectID := os.Getenv(env); projectID != "" {
+			return projectID
+		}
+	}
 	path := os.ExpandEnv(defaultGCloudConfig)
 	if _, err := os.Stat(path); err == nil {
 		if raw, err := ioutil.ReadFile(path); err == nil {
@@ -23,7 +31,6 @@ func DetectDefaultProject() string {
 			}
 		}
 	}
-	// TODO: Support PUBSUB_PROJECT_ID env
 	return ""
 }
 

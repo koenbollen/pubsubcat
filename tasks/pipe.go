@@ -13,6 +13,7 @@ type PipeParams struct {
 	Verbosity  int
 	InTopicID  string
 	OutTopicID string
+	Count      int
 }
 
 // Pipe will create a random subscription on inTopicID and forward all messages
@@ -37,8 +38,19 @@ func Pipe(ctx context.Context, client *pubsub.Client, params PipeParams) error {
 	}
 
 	// Receive messages on subscription and output them to Stdout:
-	err = subscription.Receive(ctx, func(ctx context.Context, msg *pubsub.Message) {
+	received := 0
+	cctx, cancel := context.WithCancel(ctx)
+	err = subscription.Receive(cctx, func(ctx context.Context, msg *pubsub.Message) {
 		// TODO: Test if msg.Data needs to be copied if non-blocking
+		// TODO: Test if we need a lock here, maybe only if --count?
+
+		received++
+		if params.Count > 0 && received > params.Count {
+			cancel()
+			msg.Nack()
+			return
+		}
+
 		if params.Verbosity >= 3 {
 			log.Printf("] received %q at %v", msg.ID, msg.PublishTime)
 		}
