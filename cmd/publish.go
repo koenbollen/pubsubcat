@@ -18,6 +18,7 @@ var publishCmd = &cobra.Command{
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity := GetVerbosity(cmd.Flags())
+		blocking, _ := cmd.Flags().GetBool("blocking")
 
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
@@ -39,6 +40,7 @@ var publishCmd = &cobra.Command{
 		publishParams := tasks.PublishParams{
 			Verbosity: verbosity,
 			TopicID:   topicID,
+			Blocking:  blocking,
 		}
 		err = tasks.Publish(ctx, client, publishParams)
 		if err != nil {
@@ -51,11 +53,12 @@ var publishCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(publishCmd)
 
+	publishCmd.Flags().BoolP("blocking", "b", false, "wait for server on each message")
+
 	// TODO: Checkout these for defaults and --flags
 	// topic.PublishSettings = pubsub.PublishSettings{
 	// 	ByteThreshold:  5000,
 	// 	CountThreshold: 10,
 	// 	DelayThreshold: 100 * time.Millisecond,
 	// }
-	// TODO: Support --blocking, -b
 }

@@ -14,6 +14,7 @@ import (
 type PublishParams struct {
 	Verbosity int
 	TopicID   string
+	Blocking  bool
 }
 
 // Publish lines read from os.Stdin to the given topic using the given client.
@@ -32,16 +33,15 @@ func Publish(ctx context.Context, client *pubsub.Client, params PublishParams) e
 		result := topic.Publish(ctx, &pubsub.Message{
 			Data: buffer,
 		})
-		_ = result
-		// if blocking {
-		// 	id, err := result.Get(ctx)
-		// 	if err != nil {
-		// 		return errors.Wrap(err, "failed to publish message")
-		// 	}
-		// 	if params.Verbosity >= 3 {
-		// 		log.Println("] published message:", id)
-		// 	}
-		// }
+		if params.Blocking {
+			id, err := result.Get(ctx)
+			if err != nil {
+				return errors.Wrap(err, "failed to publish message")
+			}
+			if params.Verbosity >= 3 {
+				log.Println("] published message:", id)
+			}
+		}
 	}
 	if err := scanner.Err(); err != nil {
 		return errors.Wrap(err, "failed to read from stdin")

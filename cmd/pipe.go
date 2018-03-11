@@ -14,15 +14,12 @@ import (
 // pipeCmd represents the pipe command
 var pipeCmd = &cobra.Command{
 	Use:   "pipe",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "",
+	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity := GetVerbosity(cmd.Flags())
+		blocking, _ := cmd.Flags().GetBool("blocking")
+		count, _ := cmd.Flags().GetInt("count")
 
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
@@ -61,11 +58,11 @@ to quickly create a Cobra application.`,
 			os.Exit(1)
 		}
 
-		count, _ := cmd.Flags().GetInt("count")
 		pipeParams := tasks.PipeParams{
 			Verbosity:  verbosity,
 			InTopicID:  inTopicID,
 			OutTopicID: outTopicID,
+			Blocking:   blocking,
 			Count:      count,
 		}
 		err = tasks.Pipe(ctx, client, pipeParams)
@@ -79,8 +76,8 @@ to quickly create a Cobra application.`,
 func init() {
 	rootCmd.AddCommand(pipeCmd)
 
+	pipeCmd.Flags().BoolP("blocking", "b", false, "wait for server on each message")
 	pipeCmd.Flags().IntP("count", "c", 0, "only read <int> messages, then exit")
 
 	// TODO: Support --no-cleanup
-	// TODO: Support --blocking, -b
 }
