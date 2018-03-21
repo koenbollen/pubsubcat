@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 
@@ -11,13 +12,20 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// subscribeCmd represents the subscribe command
 var subscribeCmd = &cobra.Command{
-	Use:   "subscribe",
+	Use:   "subscribe [flags] TOPIC",
 	Short: "Subscribe to a topic using a temporary subscription",
 	Long:  ``,
+	Args: func(cmd *cobra.Command, args []string) error {
+		if len(args) < 1 {
+			return errors.New("no TOPIC given")
+		}
+		return nil
+	},
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity := GetVerbosity(cmd.Flags())
+		count, _ := cmd.Flags().GetInt("count")
+		noCleanup, _ := cmd.Flags().GetBool("no-cleanup")
 
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
@@ -46,11 +54,11 @@ var subscribeCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		count, _ := cmd.Flags().GetInt("count")
 		subscribeParams := tasks.SubscribeParams{
 			TopicID:   topicID,
 			Verbosity: verbosity,
 			Count:     count,
+			NoCleanup: noCleanup,
 		}
 		err = tasks.Subscribe(ctx, client, subscribeParams)
 		if err != nil {
@@ -64,10 +72,14 @@ func init() {
 	rootCmd.AddCommand(subscribeCmd)
 
 	subscribeCmd.Flags().IntP("count", "c", 0, "only read <int> messages, then exit")
+	subscribeCmd.Flags().Bool("no-cleanup", false, "do not cleanup temporary subscription")
 
 	// TODO: Support --output=FILE, -o FILE
 	// TODO: Support --unbuffered, -u
-	// TODO: Support --no-cleanup
 	// TODO: Support --subscription mycustomsubscription (or as a second positional argument)
 	// TODO: Support https://godoc.org/cloud.google.com/go/pubsub#Subscription.SeekToTime
+
+	// This should be in pop.go but wanted to ensure the order of init:
+	popCmd.Flags().AddFlagSet(subscribeCmd.Flags())
+	popCmd.Flag("count").Hidden = true
 }

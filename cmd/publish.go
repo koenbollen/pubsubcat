@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 
@@ -13,9 +14,15 @@ import (
 
 // publishCmd represents the publish command
 var publishCmd = &cobra.Command{
-	Use:   "publish",
+	Use:   "publish [flags] TOPIC",
 	Short: "Publish input lines as messages",
 	Long:  ``,
+	Args: func(cmd *cobra.Command, args []string) error {
+		if len(args) < 1 {
+			return errors.New("no TOPIC given")
+		}
+		return nil
+	},
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity := GetVerbosity(cmd.Flags())
 		blocking, _ := cmd.Flags().GetBool("blocking")

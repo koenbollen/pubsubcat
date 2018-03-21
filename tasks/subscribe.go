@@ -23,6 +23,7 @@ type SubscribeParams struct {
 	Verbosity int
 	TopicID   string
 	Count     int
+	NoCleanup bool
 }
 
 // Subscribe will connect to pubsub, created a temporary subscription on the
@@ -76,6 +77,10 @@ func Subscribe(ctx context.Context, client *pubsub.Client, params SubscribeParam
 	})
 	if err != nil {
 		return errors.Wrapf(err, "error whilst receving messages from %s", subscription.ID())
+	}
+
+	if params.NoCleanup {
+		return nil
 	}
 
 	if params.Verbosity >= 1 {

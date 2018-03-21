@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 
@@ -11,15 +12,24 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// pipeCmd represents the pipe command
 var pipeCmd = &cobra.Command{
-	Use:   "pipe",
-	Short: "",
+	Use:   "pipe [flags] IN-TOPIC OUT-TOPIC",
+	Short: "Pipe a topic directly to another using a temporary subscription",
 	Long:  ``,
+	Args: func(cmd *cobra.Command, args []string) error {
+		if len(args) < 1 {
+			return errors.New("no IN-TOPIC given")
+		}
+		if len(args) < 2 {
+			return errors.New("no OUT-TOPIC given")
+		}
+		return nil
+	},
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity := GetVerbosity(cmd.Flags())
 		blocking, _ := cmd.Flags().GetBool("blocking")
 		count, _ := cmd.Flags().GetInt("count")
+		noCleanup, _ := cmd.Flags().GetBool("no-cleanup")
 
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
@@ -64,6 +74,7 @@ var pipeCmd = &cobra.Command{
 			OutTopicID: outTopicID,
 			Blocking:   blocking,
 			Count:      count,
+			NoCleanup:  noCleanup,
 		}
 		err = tasks.Pipe(ctx, client, pipeParams)
 		if err != nil {
@@ -78,6 +89,5 @@ func init() {
 
 	pipeCmd.Flags().BoolP("blocking", "b", false, "wait for server on each message")
 	pipeCmd.Flags().IntP("count", "c", 0, "only read <int> messages, then exit")
-
-	// TODO: Support --no-cleanup
+	pipeCmd.Flags().Bool("no-cleanup", false, "do not cleanup temporary subscription")
 }

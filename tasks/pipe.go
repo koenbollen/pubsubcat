@@ -15,6 +15,7 @@ type PipeParams struct {
 	OutTopicID string
 	Blocking   bool
 	Count      int
+	NoCleanup  bool
 }
 
 // Pipe will create a random subscription on inTopicID and forward all messages
@@ -89,6 +90,10 @@ func Pipe(ctx context.Context, client *pubsub.Client, params PipeParams) error {
 	}
 	if midReceiveError != nil {
 		return errors.Wrapf(err, "error whilst sending messages to: %s", outTopic.ID())
+	}
+
+	if params.NoCleanup {
+		return nil
 	}
 
 	if params.Verbosity >= 1 {
