@@ -20,7 +20,6 @@ var rootCmd = &cobra.Command{
 	Use:   "pubsubcat",
 	Short: "Google Pub/Sub Swiss Army Knife",
 	Long:  ``,
-
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("auto detecting publish/subscribe (not supported yet)")
 	},
@@ -64,7 +63,7 @@ func initConfig() {
 	viper.AutomaticEnv()
 
 	if err := viper.ReadInConfig(); err == nil {
-		fmt.Println("Using config file:", viper.ConfigFileUsed())
+		log.Println("] using config file:", viper.ConfigFileUsed())
 	}
 }
 
