@@ -18,7 +18,7 @@ var globalProjectID string
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "pubsubcat",
-	Short: "Google Pub/Sub Swiss Army Knife",
+	Short: "The Google Pub/Sub Swiss Army Knife",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("auto detecting publish/subscribe (not supported yet)")
