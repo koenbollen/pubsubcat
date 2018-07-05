@@ -17,6 +17,8 @@ var lsCmd = &cobra.Command{
 	Short: "List topics and subscriptions",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
+		recursive, _ := cmd.Flags().GetBool("recursive")
+
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 		utils.CancelOnSignal(ctx, cancel, os.Interrupt)
@@ -40,7 +42,7 @@ var lsCmd = &cobra.Command{
 
 		if topicID != "" {
 
-			err := tasks.ListSubscriptions(ctx, client, topicID, projectID)
+			err := tasks.ListSubscriptions(ctx, client, topicID)
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "failed to list subscriptions: %v\n", err)
 				os.Exit(1)
@@ -48,7 +50,7 @@ var lsCmd = &cobra.Command{
 
 		} else {
 
-			err := tasks.ListTopics(ctx, client)
+			err := tasks.ListTopics(ctx, client, recursive)
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "failed to list topics: %v\n", err)
 				os.Exit(1)
@@ -61,7 +63,7 @@ var lsCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(lsCmd)
 
-	// TODO: if tty, make resource gray except the topicID part.
-	// TODO: Support -r, --recurive to also output all subscriptions
+	lsCmd.Flags().BoolP("recursive", "r", false, "also output all subscriptions")
+
 	// TODO: Support -s, --short that doesn't output the entire project/resource/topic syntax
 }
