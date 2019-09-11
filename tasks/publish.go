@@ -3,12 +3,12 @@ package tasks
 import (
 	"bufio"
 	"context"
+	"fmt"
 	"log"
 	"os"
 	"strings"
 
 	"cloud.google.com/go/pubsub"
-	"github.com/pkg/errors"
 )
 
 // PublishParams allows config over the Publish task.
@@ -54,7 +54,7 @@ func Publish(ctx context.Context, client *pubsub.Client, params PublishParams) e
 		if params.Blocking {
 			id, err := result.Get(ctx)
 			if err != nil {
-				return errors.Wrap(err, "failed to publish message")
+				return fmt.Errorf("failed to publish message: %w", err)
 			}
 			if params.Verbosity >= 2 {
 				log.Println("] published message:", id)
@@ -62,7 +62,7 @@ func Publish(ctx context.Context, client *pubsub.Client, params PublishParams) e
 		}
 	}
 	if err := scanner.Err(); err != nil {
-		return errors.Wrap(err, "failed to read from stdin")
+		return fmt.Errorf("failed to read from stdin: %w", err)
 	}
 
 	if params.Verbosity >= 1 {

@@ -11,7 +11,6 @@ import (
 
 	"cloud.google.com/go/pubsub"
 	"github.com/koenbollen/pubsubcat/utils"
-	"github.com/pkg/errors"
 )
 
 const temporarySubscriptionTemplate = "pubsubcat-%s-%x-%d"
@@ -85,7 +84,7 @@ func Subscribe(ctx context.Context, client *pubsub.Client, params SubscribeParam
 		}
 	})
 	if err != nil {
-		return errors.Wrapf(err, "error whilst receving messages from %s", subscription.ID())
+		return fmt.Errorf("error whilst receving messages from %s: %w", subscription.ID(), err)
 	}
 
 	if params.NoCleanup {
@@ -107,7 +106,7 @@ func createTemporarySubscription(ctx context.Context, client *pubsub.Client, top
 		RetainAckedMessages: false,
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to create temporary subscription")
+		return nil, fmt.Errorf("failed to create temporary subscription: %w", err)
 	}
 	return subscription, nil
 }
@@ -119,7 +118,7 @@ func cleanupTemporarySubscription(subscription *pubsub.Subscription) error {
 	defer cancel()
 	err := subscription.Delete(deleteContext)
 	if err != nil {
-		return errors.Wrapf(err, "failed to cleanup subscription %v", subscription.ID())
+		return fmt.Errorf("failed to cleanup subscription %v: %w", subscription.ID(), err)
 	}
 	return nil
 }

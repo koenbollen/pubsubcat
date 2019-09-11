@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"cloud.google.com/go/pubsub"
-	"github.com/pkg/errors"
 	"google.golang.org/api/iterator"
 )
 
@@ -31,7 +30,7 @@ func CleanTopic(ctx context.Context, client *pubsub.Client, params CleanParams) 
 			break
 		}
 		if err != nil {
-			return errors.Wrapf(err, "failed to iterate subscriptions for topic: %s", params.TopicID)
+			return fmt.Errorf("failed to iterate subscriptions for topic %s: %w", params.TopicID, err)
 		}
 		if params.Verbosity >= 3 {
 			log.Println("] checking subscription", s)
@@ -50,7 +49,7 @@ func CleanTopic(ctx context.Context, client *pubsub.Client, params CleanParams) 
 				}
 				err = s.Delete(ctx)
 				if err != nil {
-					return errors.Wrapf(err, "failed to delete old subscription for topic %s", params.TopicID)
+					return fmt.Errorf("failed to delete old subscription for topic %s: %w", params.TopicID, err)
 				}
 			}
 		}

@@ -2,10 +2,10 @@ package tasks
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"cloud.google.com/go/pubsub"
-	"github.com/pkg/errors"
 )
 
 // PipeParams allows config over the Pipe task.
@@ -70,7 +70,7 @@ func Pipe(ctx context.Context, client *pubsub.Client, params PipeParams) error {
 			var id string
 			id, err = result.Get(ctx)
 			if err != nil {
-				midReceiveError = errors.Wrap(err, "failed to publish message")
+				midReceiveError = fmt.Errorf("failed to publish message: %w", err)
 				cancel()
 				msg.Nack()
 				return
@@ -86,10 +86,10 @@ func Pipe(ctx context.Context, client *pubsub.Client, params PipeParams) error {
 	})
 	outTopic.Stop()
 	if err != nil {
-		return errors.Wrapf(err, "error whilst receving messages from: %s", subscription.ID())
+		return fmt.Errorf("error whilst receving messages from %s: %w", subscription.ID(), err)
 	}
 	if midReceiveError != nil {
-		return errors.Wrapf(err, "error whilst sending messages to: %s", outTopic.ID())
+		return fmt.Errorf("error whilst sending messages to %s: %w", outTopic.ID(), err)
 	}
 
 	if params.NoCleanup {
