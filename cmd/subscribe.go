@@ -13,7 +13,7 @@ import (
 )
 
 var subscribeCmd = &cobra.Command{
-	Use:   "subscribe [flags] TOPIC",
+	Use:   "subscribe [flags] TOPIC [SUBSCRIPTION]",
 	Short: "Subscribe to a topic using a temporary subscription",
 	Long:  ``,
 	Args: func(cmd *cobra.Command, args []string) error {
@@ -54,11 +54,16 @@ var subscribeCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
+		subscriptionID := ""
+		if len(args) >= 2 {
+			subscriptionID = args[1]
+		}
 		subscribeParams := tasks.SubscribeParams{
-			TopicID:   topicID,
-			Verbosity: verbosity,
-			Count:     count,
-			NoCleanup: noCleanup,
+			TopicID:        topicID,
+			SubscriptionID: subscriptionID,
+			Verbosity:      verbosity,
+			Count:          count,
+			NoCleanup:      noCleanup,
 		}
 		err = tasks.Subscribe(ctx, client, subscribeParams)
 		if err != nil {

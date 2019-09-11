@@ -20,10 +20,11 @@ var newline = []byte("\n")
 
 // SubscribeParams allows config over the Subscribe task.
 type SubscribeParams struct {
-	Verbosity int
-	TopicID   string
-	Count     int
-	NoCleanup bool
+	Verbosity      int
+	TopicID        string
+	SubscriptionID string
+	Count          int
+	NoCleanup      bool
 }
 
 // Subscribe will connect to pubsub, created a temporary subscription on the
@@ -33,12 +34,20 @@ type SubscribeParams struct {
 func Subscribe(ctx context.Context, client *pubsub.Client, params SubscribeParams) error {
 	topic := client.Topic(params.TopicID)
 
-	if params.Verbosity >= 2 {
-		log.Println("] creating temporary subscription on topic:", topic.ID())
-	}
-	subscription, err := createTemporarySubscription(ctx, client, topic)
-	if err != nil {
-		return err
+	var subscription *pubsub.Subscription
+	if params.SubscriptionID != "" {
+		params.NoCleanup = true
+		subscription = client.Subscription(params.SubscriptionID)
+	} else {
+		if params.Verbosity >= 2 {
+			log.Println("] creating temporary subscription on topic:", topic.ID())
+		}
+
+		var err error
+		subscription, err = createTemporarySubscription(ctx, client, topic)
+		if err != nil {
+			return err
+		}
 	}
 
 	if params.Verbosity >= 1 {
@@ -51,7 +60,7 @@ func Subscribe(ctx context.Context, client *pubsub.Client, params SubscribeParam
 	var mu sync.Mutex
 	received := 0
 	cctx, cancel := context.WithCancel(ctx)
-	err = subscription.Receive(cctx, func(ctx context.Context, msg *pubsub.Message) {
+	err := subscription.Receive(cctx, func(ctx context.Context, msg *pubsub.Message) {
 		mu.Lock() // TODO: Maybe only lock when --counting or --blocking?
 		defer mu.Unlock()
 
