@@ -26,6 +26,7 @@ var publishCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity := GetVerbosity(cmd.Flags())
 		blocking, _ := cmd.Flags().GetBool("blocking")
+		attrs, _ := cmd.Flags().GetStringArray("attr")
 
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
@@ -45,9 +46,10 @@ var publishCmd = &cobra.Command{
 		defer client.Close()
 
 		publishParams := tasks.PublishParams{
-			Verbosity: verbosity,
-			TopicID:   topicID,
-			Blocking:  blocking,
+			Verbosity:  verbosity,
+			TopicID:    topicID,
+			Blocking:   blocking,
+			Attributes: attrs,
 		}
 		err = tasks.Publish(ctx, client, publishParams)
 		if err != nil {
@@ -61,6 +63,7 @@ func init() {
 	rootCmd.AddCommand(publishCmd)
 
 	publishCmd.Flags().BoolP("blocking", "b", false, "wait for server on each message")
+	publishCmd.Flags().StringArrayP("attr", "a", nil, "set an attribute for all messages (key=value)")
 
 	// TODO: Checkout these for defaults and --flags
 	// topic.PublishSettings = pubsub.PublishSettings{

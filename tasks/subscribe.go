@@ -62,10 +62,10 @@ func Subscribe(ctx context.Context, client *pubsub.Client, params SubscribeParam
 			return
 		}
 
-		if params.Verbosity >= 3 {
+		if params.Verbosity >= 2 {
 			log.Printf("] received %q at %v", msg.ID, msg.PublishTime)
 		}
-		if params.Verbosity >= 4 {
+		if params.Verbosity >= 3 {
 			log.Printf("]   attributes: %v", msg.Attributes)
 		}
 		os.Stdout.Write(msg.Data)
