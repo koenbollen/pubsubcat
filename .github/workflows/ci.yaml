@@ -1,8 +1,8 @@
 on: push
-name: Test and Lint
+name: CI
 jobs:
   checks:
-    name: run
+    name: Test & Lint
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
