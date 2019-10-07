@@ -16,7 +16,7 @@ var popCmd = &cobra.Command{
 		return nil
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		cmd.Flags().Set("count", "1")
+		cmd.Flags().Set("count", "1") //nolint:errcheck
 		subscribeCmd.Run(cmd, args)
 	},
 }

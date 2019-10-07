@@ -25,7 +25,9 @@ func ListTopics(ctx context.Context, client *pubsub.Client, recursive bool) erro
 			return err
 		}
 		if recursive {
-			ListSubscriptions(ctx, client, t.ID())
+			if err := ListSubscriptions(ctx, client, t.ID()); err != nil {
+				return err
+			}
 		} else {
 			fmt.Println(colorizeResource(t.String()))
 		}
