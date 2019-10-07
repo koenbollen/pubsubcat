@@ -19,7 +19,7 @@ func TestCancelOnSignal(t *testing.T) {
 
 	utils.CancelOnSignal(ctx, cancelFunc, syscall.SIGUSR1)
 
-	syscall.Kill(os.Getpid(), syscall.SIGUSR1)
+	syscall.Kill(os.Getpid(), syscall.SIGUSR1) //nolint:errcheck
 
 	time.Sleep(1 * time.Millisecond)
 	if !called {
