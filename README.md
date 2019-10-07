@@ -1,4 +1,4 @@
-# pubsubcat ![CI](https://github.com/koenbollen/pubsubcat/workflows/CI/badge.svg)
+# pubsubcat ![CI](https://github.com/koenbollen/pubsubcat/workflows/CI/badge.svg) [![Go Report Card](https://goreportcard.com/badge/github.com/koenbollen/pubsubcat)](https://goreportcard.com/report/github.com/koenbollen/pubsubcat)
 The Google Pub/Sub Swiss Army Knife
 
 ---
