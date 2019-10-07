@@ -1,5 +1,4 @@
-# pubsubcat
-
+# pubsubcat ![CI](https://github.com/koenbollen/pubsubcat/workflows/CI/badge.svg)
 The Google Pub/Sub Swiss Army Knife
 
 ---
